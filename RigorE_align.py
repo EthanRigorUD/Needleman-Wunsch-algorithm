@@ -102,15 +102,11 @@ printMatrix(seqOne, seqTwo, matrix)
 
 seqOneScore = ""
 seqTwoScore = ""
-x = seqOneLen -1
-y = seqTwoLen -1
-trace = []
+x = seqTwoLen -1
+y = seqOneLen -1
+trace = [(x,y)]
 
 while traceback: #would rather just use pointers atp
-    #if(x == seqOneLen | y = seqTwoLen):
-        
-
-
     if (x!=0) & (y!=0): #bounds safety
         if (matrix[x-1][y-1] > matrix[x-1][y]) & (matrix[x-1][y-1] > matrix[x][y-1]): #case diagonal
             seqOneScore = seqOne[y] + seqOneScore
@@ -125,7 +121,7 @@ while traceback: #would rather just use pointers atp
             seqOneScore = seqTwo[x] + seqOneScore
             seqTwoScore = "-" + seqTwoScore
             y-=1
-    elif (x==0):
+    elif (x==0): #only horizontals remain
         seqOneScore = seqTwo[x]+ seqOneScore 
         seqTwoScore = "-" + seqTwoScore
         y-=1
