@@ -21,7 +21,7 @@ else:
     if file_path == "1": # for debuging
         seqOne = Seq(" GAT")
         seqOneLen = len(seqOne)
-        seqTwo = Seq(" ACC")
+        seqTwo = Seq(" ACT")
         seqTwoLen = len(seqTwo)
         opening = False
 
@@ -31,10 +31,10 @@ while opening:
             opening = False
         for record in SeqIO.parse(handle, "fasta"):
             if count == 0:
-                seqOne = record.seq
+                seqOne = Seq(" " + str(record.seq)) #hacky solution, but used for the base csaes
                 seqOneLen = len(record)
             elif count == 1:
-                seqTwo = record.seq
+                seqTwo = Seq(" " + str(record.seq))
                 seqOneLen = len(record)
                 count += 1        
                 print(record)
@@ -55,7 +55,7 @@ while opening:
 IDENTITY = 4
 TRANSITION = -1 # (a<>g, t<>c)
 TRANSVERSION = -2 # (a<>t g<>t c<>a c<>g)
-GAP = -10
+GAP = -1
 
 matrix = [[0 for seqOneDNA in range(seqOneLen)] for seqTwoDNA in range(seqTwoLen)]
 
@@ -76,7 +76,7 @@ def printMatrix(seqOne, seqTwo, matrix):
 printMatrix(seqOne, seqTwo, matrix)
 print(seqOneLen, seqTwoLen)
 
-#TODO     
+#TODO: clean up magic numbers (indexs)
 for i in range(1, seqTwoLen):
   for j in range(1, seqOneLen):
     if ((seqOne[j] == 'A') & (seqTwo[i] == 'G')) | ((seqOne[j] == 'T') & (seqTwo[i] == 'C')):
@@ -88,9 +88,14 @@ for i in range(1, seqTwoLen):
     pairwise_gap = max(matrix[i-1][j]+GAP, matrix[i][j-1]+GAP)
     printMatrix(seqOne, seqTwo, matrix)
     print(i,j)
-    print(seqTwoLen)
     matrix[i][j] = max(pairwise_score, pairwise_gap)
     pairwise_score = float('-inf')
     pairwise_gap = float('-inf')
 
 printMatrix(seqOne, seqTwo, matrix)
+
+#TODO make the traceback from bottom right
+
+#Print score and matching sequences
+
+#Implement Gotoh's algo in the future
