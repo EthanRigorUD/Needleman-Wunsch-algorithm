@@ -98,7 +98,7 @@ for i in range(1, seqTwoLen):
 
 printMatrix(seqOne, seqTwo, matrix)
 
-#TODO make the traceback from bottom right
+#make the traceback from bottom right
 
 seqOneScore = ""
 seqTwoScore = ""
@@ -107,38 +107,39 @@ y = seqTwoLen -1
 trace = []
 
 while traceback: #would rather just use pointers atp
-    
+    #if(x == seqOneLen | y = seqTwoLen):
+        
+
+
     if (x!=0) & (y!=0): #bounds safety
         if (matrix[x-1][y-1] > matrix[x-1][y]) & (matrix[x-1][y-1] > matrix[x][y-1]): #case diagonal
-            x-=1
-            y-=1
             seqOneScore = seqOne[y] + seqOneScore
             seqTwoScore = seqTwo[x] + seqTwoScore
-        elif (matrix[x-1][y] > matrix[x][y-1]): #gap horizontal
             x-=1
+            y-=1
+        elif (matrix[x-1][y] > matrix[x][y-1]): #gap horizontal
             seqOneScore = "-" + seqOneScore
             seqTwoScore = seqTwo[x] + seqTwoScore 
+            x-=1
         else: #gap vertical 
-            y-=1
             seqOneScore = seqTwo[x] + seqOneScore
             seqTwoScore = "-" + seqTwoScore
+            y-=1
     elif (x==0):
-        y-=1
         seqOneScore = seqTwo[x]+ seqOneScore 
         seqTwoScore = "-" + seqTwoScore
+        y-=1
     else: #only veritcals remain
-        x-=1
         seqOneScore = "-" + seqOneScore 
         seqTwoScore = seqTwo[x] + seqTwoScore
+        x-=1
     trace.append((x,y))
     if (x == 0) & (y == 0):
         print(trace)
         traceback = False
 
-print(seqOneScore, seqTwoScore)
-
-
-
 #Print score and matching sequences
+print(seqOneScore, seqTwoScore)
+print(matrix[seqOneLen -1][seqTwoLen -1])
 
 #Implement Gotoh's algo in the future
