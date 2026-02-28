@@ -2,14 +2,20 @@ import sys
 from Bio import SeqIO #pip install biopython
 from Bio.Seq import Seq
 
-#sys.argv = ['RigorE_align.py'] #for hardcoding files and such
-
-seqOne = ""
+#TODO put in an object for better defined scopes
+seqOne= ""
 seqTwo = ""
 seqOneLen = 0
 seqTwoLen = 0
 file_path = ""
 opening = True
+traceback = True
+
+def printMatrix(seqOne, seqTwo, matrix):
+    print(list(str(seqOne)))
+    for x in range(len(matrix)):
+        print(f"{seqTwo[x]} {matrix[x]}")
+    print(seqOneLen, seqTwoLen)
 
 if len(sys.argv) > 1:
     file_path = sys.argv[1]
@@ -62,13 +68,7 @@ matrix = [[0 for seqOneDNA in range(seqOneLen)] for seqTwoDNA in range(seqTwoLen
 pairwise_score = float('-inf')
 pairwise_gap = float('-inf')
 
-def printMatrix(seqOne, seqTwo, matrix):
-    print(list(str(seqOne)))
-    for x in range(len(matrix)):
-        print(f"{seqTwo[x]} {matrix[x]}")
-    print(seqOneLen, seqTwoLen)
 
-printMatrix(seqOne, seqTwo, matrix)
 
 #base case; 0 * gap should equal 0 for the top-left corner
 for i in range(seqOneLen):
@@ -80,7 +80,7 @@ for j in range(seqTwoLen):
 printMatrix(seqOne, seqTwo, matrix)
 
 
-#TODO: clean up magic numbers (indexs)
+#TODO: clean up magic numbers (indexs) use x,y
 for i in range(1, seqTwoLen):
   for j in range(1, seqOneLen):
     if ((seqOne[j] == 'A') & (seqTwo[i] == 'G')) | ((seqOne[j] == 'T') & (seqTwo[i] == 'C')):
@@ -99,6 +99,45 @@ for i in range(1, seqTwoLen):
 printMatrix(seqOne, seqTwo, matrix)
 
 #TODO make the traceback from bottom right
+
+seqOneScore = ""
+seqTwoScore = ""
+x = seqOneLen -1
+y = seqTwoLen -1
+trace = []
+
+while traceback: #would rather just use pointers atp
+    
+    if (x!=0) & (y!=0): #bounds safety
+        if (matrix[x-1][y-1] > matrix[x-1][y]) & (matrix[x-1][y-1] > matrix[x][y-1]): #case diagonal
+            x-=1
+            y-=1
+            seqOneScore = seqOne[y] + seqOneScore
+            seqTwoScore = seqTwo[x] + seqTwoScore
+        elif (matrix[x-1][y] > matrix[x][y-1]): #gap horizontal
+            x-=1
+            seqOneScore = "-" + seqOneScore
+            seqTwoScore = seqTwo[x] + seqTwoScore 
+        else: #gap vertical 
+            y-=1
+            seqOneScore = seqTwo[x] + seqOneScore
+            seqTwoScore = "-" + seqTwoScore
+    elif (x==0):
+        y-=1
+        seqOneScore = seqTwo[x]+ seqOneScore 
+        seqTwoScore = "-" + seqTwoScore
+    else: #only veritcals remain
+        x-=1
+        seqOneScore = "-" + seqOneScore 
+        seqTwoScore = seqTwo[x] + seqTwoScore
+    trace.append((x,y))
+    if (x == 0) & (y == 0):
+        print(trace)
+        traceback = False
+
+print(seqOneScore, seqTwoScore)
+
+
 
 #Print score and matching sequences
 
