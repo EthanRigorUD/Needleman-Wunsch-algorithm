@@ -1,6 +1,5 @@
 import sys
 from Bio import SeqIO #pip install biopython
-from Bio import SeqRecord
 from Bio.Seq import Seq
 
 sys.argv = ['RigorE_align.py'] #for hardcoding files and such
@@ -20,10 +19,10 @@ else:
     print("Missing Filename / input file instead?")
     file_path = input("input file:")
     if file_path == "1": # for debuging
-        seqOne = Seq("GAT")
+        seqOne = Seq(" GAT")
         seqOneLen = len(seqOne)
-        seqTwo = Seq("ACCC")
-        seqTwoLen = len(seqOne)
+        seqTwo = Seq(" ACC")
+        seqTwoLen = len(seqTwo)
         opening = False
 
 while opening:
@@ -44,11 +43,14 @@ while opening:
         file_path = input("input file:")
         if file_path == "1": # for debuging
             print("EXAMPLE_ONE")
-            seqOne = Seq("GAT")
-            seqTwo = Seq("ACCC")
+            seqOne = Seq(" GAT")
+            seqTwo = Seq(" ACC")
             seqOneLen = len(seqOne)
             seqTwoLen = len(seqTwo)
             opening = False
+
+#seqOne = str(seqOne)
+#seqTwo = str(seqTwo)
 
 IDENTITY = 4
 TRANSITION = -1 # (a<>g, t<>c)
@@ -65,21 +67,30 @@ for i in range(seqOneLen):
     matrix[0][i] = GAP * i
 for j in range(seqTwoLen):
     matrix[j][0] = GAP * j
-for x in range(len(matrix)):
-    print(matrix[x])
 
-'''
+def printMatrix(seqOne, seqTwo, matrix):
+    print(list(str(seqOne)))
+    for x in range(len(matrix)):
+        print(f"{seqTwo[x]} {matrix[x]}")
+
+printMatrix(seqOne, seqTwo, matrix)
+print(seqOneLen, seqTwoLen)
+
 #TODO     
-for i in range(1, seqOneLen):
-  for j in range(1, seqTwoLen):
-    if (seqOne[i] == 'A' && seqTwo[j] == 'G') || (seqOne[i] == 'T' && seqTwo[j] == 'C'):
-      pairwise_score = seqOne[i-1]+seqTwo[j-1]+TRANSITION
-    elif (seqOne[i] == seqTwo[j]):
-      pairwise_score = seqOne[i-1]+seqTwo[j-1]+IDENTITY
+for i in range(1, seqTwoLen):
+  for j in range(1, seqOneLen):
+    if ((seqOne[j] == 'A') & (seqTwo[i] == 'G')) | ((seqOne[j] == 'T') & (seqTwo[i] == 'C')):
+      pairwise_score = matrix[i-1][j-1]+TRANSITION
+    elif (seqOne[j] == seqTwo[i]):
+      pairwise_score = matrix[i-1][j-1]+IDENTITY
     else:
-      pairwise_score = seqOne[i-1]+seqTwo[j-1]+TRANSVERSION
-    pairwise_gap = seqOne[i-1]+seqTwo[j-1]+GAP
+      pairwise_score = matrix[i-1][j-1]+TRANSVERSION
+    pairwise_gap = max(matrix[i-1][j]+GAP, matrix[i][j-1]+GAP)
+    printMatrix(seqOne, seqTwo, matrix)
+    print(i,j)
+    print(seqTwoLen)
     matrix[i][j] = max(pairwise_score, pairwise_gap)
     pairwise_score = float('-inf')
     pairwise_gap = float('-inf')
-'''
+
+printMatrix(seqOne, seqTwo, matrix)
