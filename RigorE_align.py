@@ -77,9 +77,6 @@ for j in range(seqTwoLen):
     matrix[j][0] = GAP * j
 
 
-printMatrix(seqOne, seqTwo, matrix)
-
-
 #TODO: clean up magic numbers (indexs) use x,y
 for i in range(1, seqTwoLen):
   for j in range(1, seqOneLen):
@@ -90,13 +87,12 @@ for i in range(1, seqTwoLen):
     else:
       pairwise_score = matrix[i-1][j-1]+TRANSVERSION
     pairwise_gap = max(matrix[i-1][j]+GAP, matrix[i][j-1]+GAP)
-    printMatrix(seqOne, seqTwo, matrix)
-    print(i,j)
+    if "-m" in sys.argv:
+        printMatrix(seqOne, seqTwo, matrix)
     matrix[i][j] = max(pairwise_score, pairwise_gap)
     pairwise_score = float('-inf')
     pairwise_gap = float('-inf')
 
-printMatrix(seqOne, seqTwo, matrix)
 
 #make the traceback from bottom right
 
@@ -131,6 +127,7 @@ while traceback: #would rather just use pointers atp
         x-=1
     trace.append((x,y))
     if (x == 0) & (y == 0):
+        printMatrix(seqOne, seqTwo, matrix)
         print(trace)
         traceback = False
 
