@@ -24,6 +24,7 @@ else:
     print("Missing Filename / input file instead?")
     file_path = input("input file:")
     if file_path == "1": # for debuging
+        print("EXAMPLE_ONE")
         seqOne = Seq(" GAT")
         seqOneLen = len(seqOne)
         seqTwo = Seq(" ACT")
@@ -132,7 +133,7 @@ while traceback: #would rather just use pointers atp
         traceback = False
 
 #Print score and matching sequences
-print(seqOneScore, seqTwoScore)
-print(matrix[seqOneLen -1][seqTwoLen -1])
+print(seqOneScore + "\n" + seqTwoScore)
+print("Score: ", matrix[seqOneLen -1][seqTwoLen -1])
 
 #Implement Gotoh's algo in the future
