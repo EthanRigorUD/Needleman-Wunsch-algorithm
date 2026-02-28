@@ -2,13 +2,12 @@ import sys
 from Bio import SeqIO #pip install biopython
 from Bio.Seq import Seq
 
-sys.argv = ['RigorE_align.py'] #for hardcoding files and such
+#sys.argv = ['RigorE_align.py'] #for hardcoding files and such
 
 seqOne = ""
 seqTwo = ""
 seqOneLen = 0
 seqTwoLen = 0
-seqCount = 0
 file_path = ""
 opening = True
 
@@ -29,13 +28,14 @@ while opening:
     try: 
         with open(file_path, "r") as handle:
             opening = False
-        for record in SeqIO.parse(handle, "fasta"):
-            if count == 0:
-                seqOne = Seq(" " + str(record.seq)) #hacky solution, but used for the base csaes
-                seqOneLen = len(record)
-            elif count == 1:
-                seqTwo = Seq(" " + str(record.seq))
-                seqOneLen = len(record)
+            count = 0
+            for record in SeqIO.parse(handle, "fasta"):
+                if count == 0:
+                    seqOne = Seq(" " + str(record.seq)) #hacky solution, but used for the base csaes
+                    seqOneLen = len(record)
+                elif count == 1:
+                    seqTwo = Seq(" " + str(record.seq))
+                    seqTwoLen = len(record)
                 count += 1        
                 print(record)
     except FileNotFoundError:   
@@ -55,12 +55,20 @@ while opening:
 IDENTITY = 4
 TRANSITION = -1 # (a<>g, t<>c)
 TRANSVERSION = -2 # (a<>t g<>t c<>a c<>g)
-GAP = -1
+GAP = -10
 
 matrix = [[0 for seqOneDNA in range(seqOneLen)] for seqTwoDNA in range(seqTwoLen)]
 
 pairwise_score = float('-inf')
 pairwise_gap = float('-inf')
+
+def printMatrix(seqOne, seqTwo, matrix):
+    print(list(str(seqOne)))
+    for x in range(len(matrix)):
+        print(f"{seqTwo[x]} {matrix[x]}")
+    print(seqOneLen, seqTwoLen)
+
+printMatrix(seqOne, seqTwo, matrix)
 
 #base case; 0 * gap should equal 0 for the top-left corner
 for i in range(seqOneLen):
@@ -68,13 +76,9 @@ for i in range(seqOneLen):
 for j in range(seqTwoLen):
     matrix[j][0] = GAP * j
 
-def printMatrix(seqOne, seqTwo, matrix):
-    print(list(str(seqOne)))
-    for x in range(len(matrix)):
-        print(f"{seqTwo[x]} {matrix[x]}")
 
 printMatrix(seqOne, seqTwo, matrix)
-print(seqOneLen, seqTwoLen)
+
 
 #TODO: clean up magic numbers (indexs)
 for i in range(1, seqTwoLen):
