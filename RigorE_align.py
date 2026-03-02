@@ -13,9 +13,14 @@ traceback = True
 
 def printMatrix(seqOne, seqTwo, matrix):
     print(list(str(seqOne)))
-    for x in range(len(matrix)):
-        print(f"{seqTwo[x]} {matrix[x]}")
+    for x in range(seqTwoLen):
+        print(seqTwo[x], end="   ")
+        for y in range(seqOneLen):
+            print(matrix[x][y], end="  ")
+        print("")
     print(seqOneLen, seqTwoLen)
+
+
 
 if len(sys.argv) > 1:
     file_path = sys.argv[1]
@@ -26,9 +31,9 @@ else:
     if file_path == "1": # for debuging
         print("EXAMPLE_ONE")
         seqOne = Seq(" GCC")
-        seqOneLen = len(seqOne)
+        seqOneLen = len(seqOne+1)
         seqTwo = Seq(" ACT")
-        seqTwoLen = len(seqTwo)
+        seqTwoLen = len(seqTwo+1)
         opening = False
 
 while opening:
@@ -39,10 +44,10 @@ while opening:
             for record in SeqIO.parse(handle, "fasta"):
                 if count == 0:
                     seqOne = Seq(" " + str(record.seq)) #hacky solution, but used for the base csaes
-                    seqOneLen = len(record)
+                    seqOneLen = len(record.seq)+1
                 elif count == 1:
                     seqTwo = Seq(" " + str(record.seq))
-                    seqTwoLen = len(record)
+                    seqTwoLen = len(record.seq)+1
                 count += 1        
                 print(record)
     except FileNotFoundError:   
@@ -52,14 +57,14 @@ while opening:
             print("EXAMPLE_ONE")
             seqOne = Seq(" GAT")
             seqTwo = Seq(" ACC")
-            seqOneLen = len(seqOne)
-            seqTwoLen = len(seqTwo)
+            seqOneLen = len(seqOne+1)
+            seqTwoLen = len(seqTwo+1)
             opening = False
 
-IDENTITY = 4
-TRANSITION = -1 # (a<>g, t<>c)
+IDENTITY = 1
+TRANSITION = -2 # (a<>g, t<>c)
 TRANSVERSION = -2 # (a<>t g<>t c<>a c<>g)
-GAP = -10
+GAP = -3
 
 matrix = [[0 for seqOneDNA in range(seqOneLen)] for seqTwoDNA in range(seqTwoLen)]
 
@@ -76,10 +81,11 @@ for y in range(seqTwoLen):
 #TODO: clean up magic numbers (indexs)
 for x in range(1, seqTwoLen):
   for y in range(1, seqOneLen):
-    if ((seqOne[y] == 'A') and (seqTwo[x] == 'G')) or ((seqOne[y] == 'T') and (seqTwo[x] == 'C')):
-      pairwise_score = matrix[x-1][y-1]+TRANSITION
-    elif (seqOne[y] == seqTwo[x]):
+    if (seqOne[y] == seqTwo[x]):
       pairwise_score = matrix[x-1][y-1]+IDENTITY
+    elif ((seqOne[y] == 'A') and (seqTwo[x] == 'G')) or ((seqOne[y] == 'T') and (seqTwo[x] == 'C')
+        or (seqOne[y] == 'G') and (seqTwo[x] == 'A')) or ((seqOne[y] == 'C') and (seqTwo[x] == 'T')):
+      pairwise_score = matrix[x-1][y-1]+TRANSITION
     else:
       pairwise_score = matrix[x-1][y-1]+TRANSVERSION
     pairwise_gap = max(matrix[x-1][y]+GAP, matrix[x][y-1]+GAP)
@@ -100,7 +106,12 @@ trace = [(x,y)]
 
 while traceback and (seqOneLen -1 or seqTwoLen -1): #would rather just use pointers atp
     if (x!=0) and (y!=0): #bounds safety
-        if (matrix[x-1][y-1] > matrix[x-1][y]) and (matrix[x-1][y-1] > matrix[x][y-1]): #case diagonal
+        if(seqOne[y] == seqTwo[x]): #case match
+            seqOneScore = seqOne[y] + seqOneScore
+            seqTwoScore = seqTwo[x] + seqTwoScore
+            x-=1
+            y-=1
+        elif (matrix[x-1][y-1] >= matrix[x-1][y]) and (matrix[x-1][y-1] >= matrix[x][y-1]): #case diagonal
             seqOneScore = seqOne[y] + seqOneScore
             seqTwoScore = seqTwo[x] + seqTwoScore
             x-=1
@@ -110,11 +121,11 @@ while traceback and (seqOneLen -1 or seqTwoLen -1): #would rather just use point
             seqTwoScore = seqTwo[x] + seqTwoScore 
             x-=1
         else: #gap vertical 
-            seqOneScore = seqTwo[x] + seqOneScore
+            seqOneScore = seqOne[y] + seqOneScore
             seqTwoScore = "-" + seqTwoScore
             y-=1
     elif (x==0): #only horizontals remain
-        seqOneScore = seqTwo[x]+ seqOneScore 
+        seqOneScore = seqOne[y]+ seqOneScore 
         seqTwoScore = "-" + seqTwoScore
         y-=1
     else: #only veritcals remain
@@ -126,10 +137,17 @@ while traceback and (seqOneLen -1 or seqTwoLen -1): #would rather just use point
         print("Sequence one:" + seqOneScore + "\n Sequence two:" + seqTwoScore)
         traceback = False
 
+#Convert matrix into strings for underlined trace
+for x in range(1, seqTwoLen):
+  for y in range(1, seqOneLen):
+      matrix[x][y] = str(matrix[x][y])
+      if (x,y) in trace:
+          matrix[x][y] = '\033[4m' + matrix[x][y] +'\033[0m'
+
 #Print score and matching sequences
 
 printMatrix(seqOne, seqTwo, matrix)
 print(trace)
-print("Score: ", matrix[seqOneLen -1][seqTwoLen -1])
+print("Score: ", matrix[seqTwoLen -1][seqOneLen -1])
 
 #Implement Gotoh's algo in the future
