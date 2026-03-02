@@ -18,9 +18,7 @@ def printMatrix(seqOne, seqTwo, matrix):
         for y in range(seqOneLen):
             print(matrix[x][y], end="  ")
         print("")
-    print(seqOneLen, seqTwoLen)
-
-
+    print("Sequence One length", seqOneLen, "Sequence Two length", seqTwoLen)
 
 if len(sys.argv) > 1:
     file_path = sys.argv[1]
@@ -61,10 +59,10 @@ while opening:
             seqTwoLen = len(seqTwo+1)
             opening = False
 
-IDENTITY = 1
-TRANSITION = -2 # (a<>g, t<>c)
+IDENTITY = 4
+TRANSITION = -1 # (a<>g, t<>c)
 TRANSVERSION = -2 # (a<>t g<>t c<>a c<>g)
-GAP = -3
+GAP = -10
 
 matrix = [[0 for seqOneDNA in range(seqOneLen)] for seqTwoDNA in range(seqTwoLen)]
 
@@ -77,14 +75,13 @@ for x in range(seqOneLen):
 for y in range(seqTwoLen):
     matrix[y][0] = GAP * y
 
-
 #TODO: clean up magic numbers (indexs)
 for x in range(1, seqTwoLen):
   for y in range(1, seqOneLen):
     if (seqOne[y] == seqTwo[x]):
       pairwise_score = matrix[x-1][y-1]+IDENTITY
     elif ((seqOne[y] == 'A') and (seqTwo[x] == 'G')) or ((seqOne[y] == 'T') and (seqTwo[x] == 'C')
-        or (seqOne[y] == 'G') and (seqTwo[x] == 'A')) or ((seqOne[y] == 'C') and (seqTwo[x] == 'T')):
+        or (seqOne[y] == 'G') and (seqTwo[x] == 'A')) or ((seqOne[y] == 'C') and (seqTwo[x] == 'T')): #use table atp
       pairwise_score = matrix[x-1][y-1]+TRANSITION
     else:
       pairwise_score = matrix[x-1][y-1]+TRANSVERSION
@@ -95,15 +92,12 @@ for x in range(1, seqTwoLen):
     pairwise_score = float('-inf')
     pairwise_gap = float('-inf')
 
-
 #make the traceback from bottom right
-
 seqOneScore = ""
 seqTwoScore = ""
 x = seqTwoLen -1
 y = seqOneLen -1
 trace = [(x,y)]
-
 while traceback and (seqOneLen -1 or seqTwoLen -1): #would rather just use pointers atp
     if (x!=0) and (y!=0): #bounds safety
         if(seqOne[y] == seqTwo[x]): #case match
@@ -147,7 +141,7 @@ for x in range(1, seqTwoLen):
 #Print score and matching sequences
 
 printMatrix(seqOne, seqTwo, matrix)
-print(trace)
+print("Trace back: ", trace)
 print("Score: ", matrix[seqTwoLen -1][seqOneLen -1])
 
 #Implement Gotoh's algo in the future
