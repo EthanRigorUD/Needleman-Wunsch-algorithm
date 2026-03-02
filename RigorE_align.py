@@ -25,7 +25,7 @@ else:
     file_path = input("input file:")
     if file_path == "1": # for debuging
         print("EXAMPLE_ONE")
-        seqOne = Seq(" GAT")
+        seqOne = Seq(" GCC")
         seqOneLen = len(seqOne)
         seqTwo = Seq(" ACT")
         seqTwoLen = len(seqTwo)
@@ -56,9 +56,6 @@ while opening:
             seqTwoLen = len(seqTwo)
             opening = False
 
-#seqOne = str(seqOne)
-#seqTwo = str(seqTwo)
-
 IDENTITY = 4
 TRANSITION = -1 # (a<>g, t<>c)
 TRANSVERSION = -2 # (a<>t g<>t c<>a c<>g)
@@ -69,28 +66,26 @@ matrix = [[0 for seqOneDNA in range(seqOneLen)] for seqTwoDNA in range(seqTwoLen
 pairwise_score = float('-inf')
 pairwise_gap = float('-inf')
 
-
-
 #base case; 0 * gap should equal 0 for the top-left corner
-for i in range(seqOneLen):
-    matrix[0][i] = GAP * i
-for j in range(seqTwoLen):
-    matrix[j][0] = GAP * j
+for x in range(seqOneLen):
+    matrix[0][x] = GAP * x
+for y in range(seqTwoLen):
+    matrix[y][0] = GAP * y
 
 
-#TODO: clean up magic numbers (indexs) use x,y
-for i in range(1, seqTwoLen):
-  for j in range(1, seqOneLen):
-    if ((seqOne[j] == 'A') & (seqTwo[i] == 'G')) | ((seqOne[j] == 'T') & (seqTwo[i] == 'C')):
-      pairwise_score = matrix[i-1][j-1]+TRANSITION
-    elif (seqOne[j] == seqTwo[i]):
-      pairwise_score = matrix[i-1][j-1]+IDENTITY
+#TODO: clean up magic numbers (indexs)
+for x in range(1, seqTwoLen):
+  for y in range(1, seqOneLen):
+    if ((seqOne[y] == 'A') and (seqTwo[x] == 'G')) or ((seqOne[y] == 'T') and (seqTwo[x] == 'C')):
+      pairwise_score = matrix[x-1][y-1]+TRANSITION
+    elif (seqOne[y] == seqTwo[x]):
+      pairwise_score = matrix[x-1][y-1]+IDENTITY
     else:
-      pairwise_score = matrix[i-1][j-1]+TRANSVERSION
-    pairwise_gap = max(matrix[i-1][j]+GAP, matrix[i][j-1]+GAP)
+      pairwise_score = matrix[x-1][y-1]+TRANSVERSION
+    pairwise_gap = max(matrix[x-1][y]+GAP, matrix[x][y-1]+GAP)
     if "-m" in sys.argv:
         printMatrix(seqOne, seqTwo, matrix)
-    matrix[i][j] = max(pairwise_score, pairwise_gap)
+    matrix[x][y] = max(pairwise_score, pairwise_gap)
     pairwise_score = float('-inf')
     pairwise_gap = float('-inf')
 
@@ -103,9 +98,9 @@ x = seqTwoLen -1
 y = seqOneLen -1
 trace = [(x,y)]
 
-while traceback: #would rather just use pointers atp
-    if (x!=0) & (y!=0): #bounds safety
-        if (matrix[x-1][y-1] > matrix[x-1][y]) & (matrix[x-1][y-1] > matrix[x][y-1]): #case diagonal
+while traceback and (seqOneLen -1 or seqTwoLen -1): #would rather just use pointers atp
+    if (x!=0) and (y!=0): #bounds safety
+        if (matrix[x-1][y-1] > matrix[x-1][y]) and (matrix[x-1][y-1] > matrix[x][y-1]): #case diagonal
             seqOneScore = seqOne[y] + seqOneScore
             seqTwoScore = seqTwo[x] + seqTwoScore
             x-=1
@@ -127,13 +122,14 @@ while traceback: #would rather just use pointers atp
         seqTwoScore = seqTwo[x] + seqTwoScore
         x-=1
     trace.append((x,y))
-    if (x == 0) & (y == 0):
-        printMatrix(seqOne, seqTwo, matrix)
-        print(trace)
+    if (x == 0) and (y == 0):
+        print("Sequence one:" + seqOneScore + "\n Sequence two:" + seqTwoScore)
         traceback = False
 
 #Print score and matching sequences
-print(seqOneScore + "\n" + seqTwoScore)
+
+printMatrix(seqOne, seqTwo, matrix)
+print(trace)
 print("Score: ", matrix[seqOneLen -1][seqTwoLen -1])
 
 #Implement Gotoh's algo in the future
